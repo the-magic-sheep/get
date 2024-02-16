@@ -1,10 +1,42 @@
 #include <dirent.h>
+#include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <unistd.h>
 
+char *strjoin(char **strings, int count) {
+    int joined_len = 0;
+    size_t lengths[count];
+    for (int ii = 0; ii < count; ii++) {
+        int len = strlen(strings[ii]);
+        joined_len += len;
+        lengths[ii] = len;
+    }
+    char *joined = malloc(joined_len + 1);
+
+    int pos = 0;
+    for (int ii = 0; ii < count; ii++) {
+        memcpy(&joined[pos], strings[ii], lengths[ii]);
+        pos += lengths[ii];
+    }
+    joined[joined_len] = '\0';
+
+    return joined;
+}
+
+char *get_home_dir() {
+
+    char *homedir;
+    if ((homedir = getenv("HOME")) == NULL) {
+        homedir = getpwuid(getuid())->pw_dir;
+    }
+
+    char *path_elements[] = {homedir, "/"};
+    return strjoin(path_elements, 2);
+}
 int file_copy(char *source, char *target) {
     FILE *source_fd = fopen(source, "r");
     if (source_fd == NULL) {
@@ -82,7 +114,19 @@ char *get_dir_name(char *source_file, char *base_dir) {
 char *get_checkpoint_path(char *source_file, char *checkpoint_name) {
 
     // Compute the directory name associated with the target file
-    char *dir_name = get_dir_name(source_file, "./");
+    char *homedir = get_home_dir();
+
+    if (homedir == NULL) {
+        printf("Failed to locate home directory.\n");
+        return NULL;
+    }
+
+    char *base_dir = strjoin((char *[]){homedir, ".get/.cache/"}, 2);
+    free(homedir);
+
+    char *dir_name = get_dir_name(source_file, base_dir);
+
+    free(base_dir);
 
     if (dir_name == NULL) {
         return NULL;
@@ -96,23 +140,10 @@ char *get_checkpoint_path(char *source_file, char *checkpoint_name) {
     int dir_name_len = strlen(dir_name);
     int cp_name_len = strlen(checkpoint_name);
 
-    // Allocate a new string for the full file path
-    // Includes space for the dirname, the checkpoint name,
-    // and the forward slash separator.
-    char *file_name = malloc(dir_name_len + cp_name_len + 2);
+    char *path_elements[] = {dir_name, "/", checkpoint_name};
+    char *file_name = strjoin(path_elements, 3);
 
-    // Copy the dirname into the file path
-    memcpy(file_name, dir_name, dir_name_len);
-
-    // We no longer need dir_name
     free(dir_name);
-
-    // Add a forward slash separator
-    file_name[dir_name_len] = '/';
-
-    // Sopy the checkpoint name into the file path
-    // This is the name of the file under the target file's cache dir.
-    memcpy(&file_name[dir_name_len + 1], checkpoint_name, cp_name_len + 1);
 
     // Return the path to the checkpoint file.
     return file_name;
@@ -306,11 +337,21 @@ int list(int argc, char **argv) {
     }
 
     // Compute the directory name associated with the target file
-    char *dir_name = get_dir_name(argv[2], "./");
+    char *homedir = get_home_dir();
+    if (homedir == NULL) {
+        printf("Failed to locate home directory.\n");
+        return 1;
+    }
+    char *base_dir = strjoin((char *[]){homedir, ".get/.cache/"}, 2);
+    free(homedir);
+
+    char *dir_name = get_dir_name(argv[2], base_dir);
+
+    free(base_dir);
 
     if (dir_name == NULL) {
         printf("Failed to compute cache directory name for '%s'\n", argv[2]);
-        return 0;
+        return 1;
     }
 
     DIR *d;
@@ -348,11 +389,22 @@ int purge(int argc, char **argv) {
     }
 
     // Compute the directory name associated with the target file
-    char *dir_name = get_dir_name(argv[2], "./");
+    char *homedir = get_home_dir();
+
+    if (homedir == NULL) {
+        printf("Failed to locate home directory.\n");
+        return 1;
+    }
+    char *base_dir = strjoin((char *[]){homedir, ".get/.cache/"}, 2);
+    free(homedir);
+
+    char *dir_name = get_dir_name(argv[2], base_dir);
+
+    free(base_dir);
 
     if (dir_name == NULL) {
         printf("Failed to compute cache directory name for '%s'\n", argv[2]);
-        return 0;
+        return 1;
     }
 
     DIR *d;
@@ -368,10 +420,9 @@ int purge(int argc, char **argv) {
             char *d_name = dir->d_name;
             if (strcmp(d_name, ".") != 0 && strcmp(d_name, "..") != 0) {
                 int d_name_len = strlen(d_name);
-                char *file_path = malloc(dir_name_len + d_name_len + 1);
-                memcpy(file_path, dir_name, dir_name_len);
-                file_path[dir_name_len] = '/';
-                memcpy(&file_path[dir_name_len + 1], d_name, d_name_len + 1);
+
+                char *path_elements[] = {dir_name, "/", d_name};
+                char *file_path = strjoin(path_elements, 3);
 
                 remove(file_path);
 
@@ -418,7 +469,7 @@ int main(int argc, char **argv) {
         return purge(argc, argv);
     }
 
-    printf("'%s' is not a valid command.\nUse 'get' or 'get -h' to see valid "
+    printf("'%s' is not a valid command.\nUse 'get' or 'get -h' to see valid"
            "commands.\n",
            argv[1]);
 
