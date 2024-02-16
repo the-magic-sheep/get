@@ -1,3 +1,6 @@
+This project is a work in progress and should not be considered stable.
+Use at your own risk.
+
 get is a basic command line utility to store file checkpoints that can later be loaded. 
 
 It is basically a glorified undo button.
