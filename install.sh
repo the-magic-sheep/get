@@ -17,5 +17,5 @@ curl "https://raw.githubusercontent.com/the-magic-sheep/get/master/get.c" \
     | gcc -o $HOME/.get/bin/get -xc -
 
 
-curl "https://raw.githubusercontent.com/the-magic-sheep/get/master/get.c" \
+curl "https://raw.githubusercontent.com/the-magic-sheep/get/master/help.txt" \
     > $HOME/.get/bin/help.txt
