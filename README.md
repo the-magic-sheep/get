@@ -26,7 +26,7 @@ sudo ln -s $HOME/.get/bin/get /bin/get
 
 ## Uninstall
 
-`get` doesn't touch anything other that `~/.get` (except, of course, all of your files).
+`get` doesn't touch anything other than `~/.get` (except, of course, all of your files).
 
 To uninstall, simply delete the `~/.get` directory.
 
