@@ -152,7 +152,32 @@ char *get_checkpoint_path(char *source_file, char *checkpoint_name) {
 const char *STRINGS[] = {"cp", "checkpoint", "r", "revert"};
 
 int print_help() {
-    printf("Welcome to the get help menu!\n");
+
+    char *homedir = get_home_dir();
+
+    if (homedir == NULL) {
+        printf("Failed to locate home directory.\n");
+        return 1;
+    }
+
+    char *help_path = strjoin((char *[]){homedir, ".get/bin/help.txt"}, 2);
+    free(homedir);
+
+    FILE *help_fd = fopen(help_path, "r");
+    free(help_path);
+    if (help_fd == NULL) {
+        printf("Unable to locate help menu.\n");
+        return 2;
+    }
+
+    char c;
+
+    while ((c = fgetc(help_fd)) != EOF) {
+        printf("%c", c);
+    }
+
+    fclose(help_fd);
+
     return 0;
 }
 

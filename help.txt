@@ -1,0 +1,69 @@
+Welcome to the `get` help menu!
+
+The following commands are currently available:
+
+cp, checkpoint:
+
+    Save a checkpoint of the target file with a checkpoint id.
+
+    Usage:
+
+        get cp <target-file> <checkpoint-name>
+
+        or
+
+        get checkpoint <target-file> <checkpoint-name>
+
+l, load:
+
+    Load a saved checkpoint for a target file.
+
+    Usage:
+
+        get l <target-file> <checkpoint-name>
+
+        or
+
+        get load <target-file> <checkpoint-name>
+
+u, undo:
+
+    Undo the previous load. Reverts the target file back to its state
+    before a checkpoint was loaded.
+
+    Usage:
+
+        get u <target-file>
+
+        or
+
+        get undo <target-file>
+
+d, drop:
+
+    Delete a given checkpoint associated with the target file.
+
+    Usage:
+        
+        get d <target-file> <checkpoint-name>
+
+        or 
+     
+        get drop <target-file> <checkpoint-name>
+
+list:
+
+    List the saved checkpoints associated with the target file.
+    
+    Usage:
+
+        get list <target-file>
+
+purge:
+
+    Delete all saved checkpoints associated with the target file.
+    
+    Usage:
+
+        get purge <target-file>
+

@@ -14,6 +14,8 @@ mkdir $HOME/.get/.cache
 mkdir $HOME/.get/bin
 
 curl "https://raw.githubusercontent.com/the-magic-sheep/get/master/get.c" \
-    | gcc -o ~/.get/bin/get -xc -
+    | gcc -o $HOME/.get/bin/get -xc -
 
 
+curl "https://raw.githubusercontent.com/the-magic-sheep/get/master/get.c" \
+    > $HOME/.get/bin/help.txt
